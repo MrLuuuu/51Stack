@@ -1,0 +1,57 @@
+C51 COMPILER V9.52.0.0   KEYBOARD                                                          06/10/2019 22:46:27 PAGE 1   
+
+
+C51 COMPILER V9.52.0.0, COMPILATION OF MODULE KEYBOARD
+OBJECT MODULE PLACED IN .\obj\keyboard.obj
+COMPILER INVOKED BY: E:\Keil\C51\BIN\C51.EXE common\keyboard.c BROWSE INCDIR(.\common;.\main;.\sensors) DEBUG OBJECTEXTE
+                    -ND PRINT(.\lst\keyboard.lst) TABS(2) OBJECT(.\obj\keyboard.obj)
+
+line level    source
+
+   1          #include "keyboard.h"
+   2          
+   3          char Keyboard_Down(void)
+   4          {
+   5   1        char KeyValue=16;
+   6   1        KEY=0x0f;
+   7   1        if(KEY!=0x0f)//读取按键是否按下
+   8   1        {
+   9   2          delay_ms(10);//延时10ms进行消抖
+  10   2          if(KEY!=0x0f)//再次检测键盘是否按下
+  11   2          { 
+  12   3            //测试列
+  13   3            KEY=0X0F;
+  14   3            switch(KEY)
+  15   3            {
+  16   4              case(0X07): KeyValue=0;break;
+  17   4              case(0X0b): KeyValue=1;break;
+  18   4              case(0X0d): KeyValue=2;break;
+  19   4              case(0X0e): KeyValue=3;break;
+  20   4            }
+  21   3            //测试行
+  22   3            KEY=0XF0;
+  23   3            switch(KEY)
+  24   3            {
+  25   4              case(0X70): KeyValue=KeyValue;break;
+  26   4              case(0Xb0): KeyValue=KeyValue+4;break;
+  27   4              case(0Xd0): KeyValue=KeyValue+8;break;
+  28   4              case(0Xe0): KeyValue=KeyValue+12;break;
+  29   4            }
+  30   3          }
+  31   2        }
+  32   1        return KeyValue;
+  33   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    108    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----       1
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

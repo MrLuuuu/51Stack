@@ -1,0 +1,14 @@
+".\obj\STARTUP.obj",
+".\obj\main.obj",
+".\obj\uart.obj",
+".\obj\delay.obj",
+".\obj\nixietube.obj",
+".\obj\button.obj",
+".\obj\keyboard.obj",
+".\obj\ledmatrix.obj",
+".\obj\interrupt.obj",
+".\obj\timer.obj",
+".\obj\iic.obj",
+".\obj\at24c02.obj" 
+TO ".\obj\51stack" 
+PRINT(".\lst\51stack.m51") RAMSIZE(256) 

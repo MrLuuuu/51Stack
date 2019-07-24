@@ -1,0 +1,120 @@
+C51 COMPILER V9.52.0.0   UART                                                              06/10/2019 22:46:27 PAGE 1   
+
+
+C51 COMPILER V9.52.0.0, COMPILATION OF MODULE UART
+OBJECT MODULE PLACED IN .\obj\uart.obj
+COMPILER INVOKED BY: E:\Keil\C51\BIN\C51.EXE common\uart.c BROWSE INCDIR(.\common;.\main;.\sensors) DEBUG OBJECTEXTEND P
+                    -RINT(.\lst\uart.lst) TABS(2) OBJECT(.\obj\uart.obj)
+
+line level    source
+
+   1          #include "reg52.h"
+   2          #include "uart.h"
+   3          
+   4          
+   5          unsigned char data_count=0;
+   6          /*******************
+   7          *SCON:SM0 SM1 SM2 REN TB8 RB8 TI RI
+   8          *SM0 SM1:00 移位寄存器;01 10位异步可变波特率;10 11位异步固定波特率;11 11位可变波特率
+   9          *SM2:多机通信控制位,仅在模式2、3中使;模式1设为0
+  10          *REN:允许串行接收,设为1
+  11          *TB8 RB8:模式2、3使用,设为0
+  12          *TI:发送完成置1触发中断,需用软件清0
+  13          *RI:接收完成置1触发中断,需用软件清0
+  14          ****************/
+  15          
+  16          
+  17          
+  18          void UartOpen(unsigned int baudrate)
+  19          {
+  20   1        SCON=0x50;//设置工作方式为1
+  21   1        PCON|=0x80;//波特率倍增位,方式1、2、3时,最高位寄存器置1时波特率倍增
+  22   1        TMOD|=0x20;//使用定时器1定时,8位自动重装
+  23   1        switch(baudrate){
+  24   2        case 1200:TH1=TL1=BAUDRATE_1200;break;
+  25   2        case 2400:TH1=TL1=BAUDRATE_2400;break;
+  26   2        case 4800:TH1=TL1=BAUDRATE_4800;break;
+  27   2      //  case 9600:TH1=TL1=BAUDRATE_9600;break;
+  28   2      //  case 14400:TH1=TL1=BAUDRATE_14400;break;
+  29   2      //  case 19200:TH1=TL1=BAUDRATE_19200;break;
+  30   2      //  case 38400:TH1=TL1=BAUDRATE_38400;break;
+  31   2        default:TH1=TL1=BAUDRATE_4800;break;
+  32   2        }
+  33   1      //  ES=1;//打开接收中断
+  34   1      //  EA=1;//打开总中断
+  35   1        TR1=1;//打开定时器
+  36   1      }
+  37          
+  38          //void Uart() interrupt 4
+  39          //{
+  40          //  if(RI)
+  41          //    if((SBUF!='\n')||(SBUF!='\0'))
+  42          //      readbuffer[data_count++]=SBUF;//将SBUF缓存区内容提取出来
+  43          //  RI=0;//清空接收中断 
+  44          //}
+  45          
+  46          //char UartRead(unsigned char*p,unsigned int length)
+  47          //{
+  48          //    static unsigned char flag=0;
+  49          ////  char *buffer=p;
+  50          ////  *buffer=SBUF;
+  51          ////  loop:
+  52          ////  RI=0;//清空接收中断
+  53          ////  if(flag<length)
+  54          ////  {
+C51 COMPILER V9.52.0.0   UART                                                              06/10/2019 22:46:27 PAGE 2   
+
+  55          ////    p[flag]=*buffer;
+  56          ////    flag++;
+  57          ////    buffer++;
+  58          ////    if( (*buffer=='\n')||(*buffer=='\0')||(*buffer==0) )
+  59          ////      return 0;
+  60          ////    goto loop;
+  61          ////  }
+  62          //  char ch=SBUF;
+  63          //  RI=0;//人为开关一次
+  64          //  strcat(p,&ch);
+  65          //    flag++;
+  66          //    Nixietube_Display(flag+'0',0);
+  67          //    if(flag==length)
+  68          //    {
+  69          //      flag=0;
+  70          //      return 0;
+  71          //    }
+  72          //  
+  73          //  return 0;
+  74          //}
+  75          
+  76          void UartWrite(unsigned char *p,unsigned int length)
+  77          {
+  78   1        int i=0;
+  79   1      //  ES=0;
+  80   1      //  EA=0;//关掉中断，避免进入中断处理中
+  81   1        for(i=0;i<length-1;i++)
+  82   1        {
+  83   2          if((p[i]=='\n')||(p[i]=='\0')||(p[i]==0))
+  84   2            break;
+  85   2          SBUF=p[i];
+  86   2          while(!TI);
+  87   2          TI=0;
+  88   2        }
+  89   1        SBUF='\n';
+  90   1        while(!TI);
+  91   1        TI=0;
+  92   1      //  ES=1;//打开接收中断
+  93   1      //  EA=1;//打开总中断
+  94   1      } 
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    132    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      1       5
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

@@ -1,0 +1,125 @@
+C51 COMPILER V9.52.0.0   IIC                                                               06/10/2019 22:46:28 PAGE 1   
+
+
+C51 COMPILER V9.52.0.0, COMPILATION OF MODULE IIC
+OBJECT MODULE PLACED IN .\obj\iic.obj
+COMPILER INVOKED BY: E:\Keil\C51\BIN\C51.EXE common\iic.c BROWSE INCDIR(.\common;.\main;.\sensors) DEBUG OBJECTEXTEND PR
+                    -INT(.\lst\iic.lst) TABS(2) OBJECT(.\obj\iic.obj)
+
+line level    source
+
+   1          #include "delay.h"
+   2          #include "iic.h"
+   3          
+   4          
+   5          
+   6          
+   7          /*************IIC起始信号***********************
+   8          *
+   9          **备注           : 起始之后SDA和SCL都为0
+  10          */
+  11          void IICStart()
+  12          {
+  13   1        SDA=1;
+  14   1        delay_10us();
+  15   1        SCL=1;
+  16   1        delay_10us();//建立时间是SDA保持时间>4.7us
+  17   1        SDA=0;
+  18   1        delay_10us();//保持时间是>4us
+  19   1        SCL=0;      
+  20   1        delay_10us();
+  21   1      }
+  22          
+  23          /*************IIC结束信号***********************
+  24          *
+  25          *备注           : 结束之后保持SDA和SCL都为1；表示总线空闲
+  26          */
+  27          void IICEnd()
+  28          {
+  29   1        SDA=0;
+  30   1        delay_10us();
+  31   1        SCL=1;
+  32   1        delay_10us();//建立时间大于4.7us
+  33   1        SDA=1;
+  34   1        delay_10us();
+  35   1      }
+  36          
+  37          /*******************************************************************************
+  38          * 函数名         : IICSendByte(unsigned char dat)
+  39          * 函数功能     : 通过I2C发送一个字节。在SCL时钟信号高电平期间，保持发送信号SDA保持稳定
+  40          * 输入           : num
+  41          * 输出           : 0或1。发送成功返回1，发送失败返回0
+  42          * 备注           : 发送完一个字节SCL=0,SDA=1
+  43          *******************************************************************************/
+  44          
+  45          unsigned char IICSendByte(unsigned char dat)
+  46          {
+  47   1        unsigned char a=0,b=0;//最大255，一个机器周期为1us，最大延时255us。   
+  48   1        for(a=0;a<8;a++)//要发送8位，从最高位开始
+  49   1        {
+  50   2          SDA=dat>>7;  //起始信号之后SCL=0，所以可以直接改变SDA信号
+  51   2          dat=dat<<1;
+  52   2          delay_10us();
+  53   2          SCL=1;
+  54   2          delay_10us();//建立时间>4.7us
+C51 COMPILER V9.52.0.0   IIC                                                               06/10/2019 22:46:28 PAGE 2   
+
+  55   2          SCL=0;
+  56   2          delay_10us();//时间大于4us    
+  57   2        }
+  58   1        SDA=1;
+  59   1        delay_10us();
+  60   1        SCL=1;
+  61   1        while(SDA)//等待应答，也就是等待从设备把SDA拉低
+  62   1        {
+  63   2          b++;
+  64   2          if(b>200)  //如果超过2000us没有应答发送失败，或者为非应答，表示接收结束
+  65   2          {
+  66   3            SCL=0;
+  67   3            delay_10us();
+  68   3            return 0;
+  69   3          }
+  70   2        }
+  71   1        SCL=0;
+  72   1        delay_10us();
+  73   1        return 1;   
+  74   1      }
+  75          
+  76          /*******************************************************************************
+  77          * 函数名         : IICReadByte()
+  78          * 函数功能       : 使用I2c读取一个字节
+  79          * 输入           : 无
+  80          * 输出           : dat
+  81          * 备注           : 接收完一个字节SCL=0,SDA=1.
+  82          *******************************************************************************/
+  83          unsigned char IICReadByte()
+  84          {
+  85   1        unsigned char a=0,dat=0;
+  86   1        SDA=1;      //起始和发送一个字节之后SCL都是0
+  87   1        delay_10us();
+  88   1        for(a=0;a<8;a++)//接收8个字节
+  89   1        {
+  90   2          SCL=1;
+  91   2          delay_10us();
+  92   2          dat<<=1;
+  93   2          dat|=SDA;
+  94   2          delay_10us();
+  95   2          SCL=0;
+  96   2          delay_10us();
+  97   2        }
+  98   1        return dat;   
+  99   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    169    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----       5
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
